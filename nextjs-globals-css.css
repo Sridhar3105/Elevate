@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #07030f;
+  --card: #110a1f;
+  --card2: #0e0819;
+  --border: #2d1f45;
+  --pink: #e879f9;
+  --violet: #a855f7;
+  --purple: #7c3aed;
+  --text: #f0e8ff;
+  --muted: #7c6a9a;
+  --green: #22c55e;
+  --yellow: #f59e0b;
+  --red: #ef4444;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--card); }
+::-webkit-scrollbar-thumb { background: var(--purple); border-radius: 4px; }
+
+/* Gradient text utility */
+.grad-text {
+  background: linear-gradient(135deg, #e879f9, #a855f7, #7c3aed);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* PCB grid background */
+.pcb-grid {
+  background-image:
+    linear-gradient(rgba(168, 85, 247, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(168, 85, 247, 0.04) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 1;   }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 16px rgba(168,85,247,.3); }
+  50%       { box-shadow: 0 0 32px rgba(232,121,249,.6); }
+}
+
+.fade-in   { animation: fadeIn  0.28s ease; }
+.slide-in  { animation: slideIn 0.25s ease; }
+.spin-anim { animation: spin    1s linear infinite; }
+
+.typing-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--violet);
+  animation: pulse-dot 1.2s infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
