@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Elevate Setup Guide</title>
+<style>
+  :root{--bg:#07030f;--card:#110a1f;--border:#2d1f45;--pink:#e879f9;--violet:#a855f7;--purple:#7c3aed;--text:#f0e8ff;--muted:#7c6a9a;--green:#22c55e;--yellow:#f59e0b;--red:#ef4444;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
+  .hero{background:linear-gradient(135deg,#1a0535,#2d0a4e,#0e0215);padding:48px 40px 36px;text-align:center;border-bottom:1px solid var(--border);}
+  .hero h1{font-size:2rem;font-weight:900;background:linear-gradient(135deg,#e879f9,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:10px;}
+  .hero p{color:var(--muted);font-size:1rem;max-width:540px;margin:0 auto;}
+  .progress-bar{display:flex;justify-content:center;gap:0;margin-top:28px;flex-wrap:wrap;gap:8px;}
+  .pb{padding:7px 16px;border-radius:20px;font-size:.78rem;font-weight:700;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:.2s;}
+  .pb.active{background:linear-gradient(135deg,#e879f9,#7c3aed);color:#fff;border-color:transparent;}
+  .pb.done{background:rgba(34,197,94,.12);color:var(--green);border-color:rgba(34,197,94,.3);}
+  .container{max-width:820px;margin:0 auto;padding:36px 24px;}
+  .phase{display:none;}
+  .phase.active{display:block;}
+  .phase-header{display:flex;align-items:center;gap:14px;margin-bottom:28px;}
+  .phase-num{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#e879f9,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:900;color:#fff;flex-shrink:0;}
+  .phase-header h2{font-size:1.4rem;font-weight:900;}
+  .phase-header p{color:var(--muted);font-size:.88rem;margin-top:4px;}
+  .step-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 24px;margin-bottom:16px;position:relative;}
+  .step-card.highlight{border-color:rgba(168,85,247,.4);background:rgba(168,85,247,.04);}
+  .step-num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:rgba(168,85,247,.15);border:1px solid rgba(168,85,247,.3);color:var(--violet);font-size:.75rem;font-weight:800;margin-bottom:10px;}
+  .step-card h3{font-size:1rem;font-weight:800;margin-bottom:8px;}
+  .step-card p{color:var(--muted);font-size:.88rem;line-height:1.7;margin-bottom:0;}
+  .step-card p+p{margin-top:8px;}
+  code{background:rgba(168,85,247,.12);border:1px solid rgba(168,85,247,.2);color:#d8b4fe;padding:3px 8px;border-radius:6px;font-size:.84em;font-family:'Courier New',monospace;}
+  pre{background:#060d1a;border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin:12px 0;overflow-x:auto;position:relative;}
+  pre code{background:none;border:none;color:#c4b5fd;font-size:.85rem;padding:0;line-height:1.7;}
+  .copy-btn{position:absolute;top:10px;right:10px;background:rgba(168,85,247,.15);border:1px solid rgba(168,85,247,.3);color:var(--violet);padding:5px 11px;border-radius:7px;font-size:.72rem;font-weight:700;cursor:pointer;transition:.2s;}
+  .copy-btn:hover{background:rgba(168,85,247,.3);}
+  .copy-btn.copied{color:var(--green);border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.1);}
+  .tip{background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:13px 16px;margin:12px 0;font-size:.85rem;color:var(--green);}
+  .tip::before{content:"💡 Tip: ";font-weight:700;}
+  .warn{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:13px 16px;margin:12px 0;font-size:.85rem;color:var(--yellow);}
+  .warn::before{content:"⚠️ Note: ";font-weight:700;}
+  .download-btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#e879f9,#7c3aed);color:#fff;padding:11px 22px;border-radius:10px;font-weight:700;font-size:.88rem;text-decoration:none;border:none;cursor:pointer;margin:8px 6px 8px 0;transition:.2s;}
+  .download-btn:hover{opacity:.85;transform:translateY(-1px);}
+  .download-btn.secondary{background:transparent;border:1px solid var(--border);color:var(--muted);}
+  .download-btn.secondary:hover{border-color:var(--violet);color:var(--pink);}
+  .img-mock{background:linear-gradient(135deg,#0e0819,#1a0535);border:1px solid var(--border);border-radius:12px;padding:28px;text-align:center;margin:14px 0;color:var(--muted);font-size:.85rem;}
+  .img-mock .icon{font-size:2.5rem;margin-bottom:10px;}
+  .nav-btns{display:flex;justify-content:space-between;margin-top:32px;gap:12px;}
+  .nav-btn{padding:12px 28px;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;border:none;transition:.2s;}
+  .nav-btn.prev{background:transparent;border:1px solid var(--border);color:var(--muted);}
+  .nav-btn.prev:hover{border-color:var(--violet);color:var(--pink);}
+  .nav-btn.next{background:linear-gradient(135deg,#e879f9,#7c3aed);color:#fff;box-shadow:0 0 16px rgba(168,85,247,.3);}
+  .nav-btn.next:hover{opacity:.87;transform:translateY(-1px);}
+  .checklist{list-style:none;margin:12px 0;}
+  .checklist li{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.87rem;color:var(--muted);}
+  .checklist li:last-child{border-bottom:none;}
+  .checklist li::before{content:"☐";color:var(--violet);font-size:1rem;flex-shrink:0;}
+  .tool-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:14px 0;}
+  .tool-card{background:#0e0819;border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;}
+  .tool-card .ti{font-size:2rem;margin-bottom:8px;}
+  .tool-card h4{font-size:.85rem;font-weight:700;margin-bottom:4px;}
+  .tool-card p{font-size:.75rem;color:var(--muted);}
+  .tool-card a{display:block;margin-top:10px;color:var(--pink);font-size:.75rem;font-weight:700;text-decoration:none;}
+  .badge{display:inline-block;font-size:.65rem;padding:3px 8px;border-radius:10px;font-weight:700;margin-left:6px;}
+  .badge.free{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.25);}
+  .badge.req{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.25);}
+  .file-tree{background:#060d1a;border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin:12px 0;font-family:'Courier New',monospace;font-size:.83rem;line-height:1.9;color:#c4b5fd;}
+  .ft-folder{color:#e879f9;font-weight:700;}
+  .ft-file{color:#a5b4fc;}
+  .ft-comment{color:var(--muted);font-style:italic;}
+  .congrats{text-align:center;padding:40px 20px;}
+  .congrats .big{font-size:4rem;margin-bottom:16px;}
+  .congrats h2{font-size:1.6rem;font-weight:900;background:linear-gradient(135deg,#e879f9,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px;}
+  .congrats p{color:var(--muted);max-width:480px;margin:0 auto 24px;line-height:1.7;}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>🚀 Build Elevate from Scratch</h1>
+  <p>A complete beginner's guide — no coding experience needed. Follow each step and you'll have a real website live on the internet!</p>
+  <div class="progress-bar">
+    <button class="pb active" onclick="goTo(0)">1. Install Tools</button>
+    <button class="pb" onclick="goTo(1)">2. Create Project</button>
+    <button class="pb" onclick="goTo(2)">3. Add Pages</button>
+    <button class="pb" onclick="goTo(3)">4. Database</button>
+    <button class="pb" onclick="goTo(4)">5. AI & Payments</button>
+    <button class="pb" onclick="goTo(5)">6. Go Live!</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- PHASE 1 -->
+  <div class="phase active" id="phase-0">
+    <div class="phase-header">
+      <div class="phase-num">1</div>
+      <div><h2>Install Your Tools</h2><p>Before writing any code, we need 3 free programs installed on your computer.</p></div>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">1</div>
+      <h3>Install Node.js <span class="badge req">Required</span></h3>
+      <p>Node.js lets your computer run JavaScript code. Think of it as the engine that powers everything.</p>
+      <div class="tip">Download the <strong>LTS version</strong> (Long Term Support) — it's the most stable.</div>
+      <a class="download-btn" href="https://nodejs.org" target="_blank">⬇ Download Node.js (Free)</a>
+      <p style="margin-top:10px;">After installing, open your <strong>Terminal</strong> (Mac) or <strong>Command Prompt</strong> (Windows) and type:</p>
+      <pre><code>node --version</code><button class="copy-btn" onclick="cp(this,'node --version')">Copy</button></pre>
+      <p>You should see something like <code>v20.11.0</code> — that means it worked! ✅</p>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">2</div>
+      <h3>Install VS Code <span class="badge req">Required</span></h3>
+      <p>VS Code is the program where you'll write and edit your code. It's free and made by Microsoft.</p>
+      <a class="download-btn" href="https://code.visualstudio.com" target="_blank">⬇ Download VS Code (Free)</a>
+      <div class="tip">After installing VS Code, also install these helpful extensions: <strong>ESLint</strong>, <strong>Prettier</strong>, and <strong>Tailwind CSS IntelliSense</strong> — search for them inside VS Code's Extensions panel.</div>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">3</div>
+      <h3>Install Git <span class="badge req">Required</span></h3>
+      <p>Git saves your code history and lets you upload your code to GitHub so Vercel can deploy it.</p>
+      <a class="download-btn" href="https://git-scm.com/downloads" target="_blank">⬇ Download Git (Free)</a>
+      <p style="margin-top:10px;">After installing, verify it works:</p>
+      <pre><code>git --version</code><button class="copy-btn" onclick="cp(this,'git --version')">Copy</button></pre>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">4</div>
+      <h3>How to open Terminal / Command Prompt</h3>
+      <p><strong>Windows:</strong> Press <code>Windows key + R</code>, type <code>cmd</code>, press Enter.</p>
+      <p style="margin-top:8px;"><strong>Mac:</strong> Press <code>Command + Space</code>, type <code>Terminal</code>, press Enter.</p>
+      <p style="margin-top:8px;"><strong>VS Code (easiest):</strong> Open VS Code → top menu → <code>Terminal</code> → <code>New Terminal</code>. Use this one from now on!</p>
+      <div class="warn">The terminal might look scary but you're just typing commands — like texting your computer. It does exactly what you tell it!</div>
+    </div>
+
+    <div class="nav-btns">
+      <div></div>
+      <button class="nav-btn next" onclick="goTo(1)">Next: Create Project →</button>
+    </div>
+  </div>
+
+  <!-- PHASE 2 -->
+  <div class="phase" id="phase-1">
+    <div class="phase-header">
+      <div class="phase-num">2</div>
+      <div><h2>Create Your Project</h2><p>One command creates the entire Next.js project structure for you automatically.</p></div>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">1</div>
+      <h3>Choose where to save your project</h3>
+      <p>First, decide where on your computer to save the project. We recommend your Desktop or Documents folder.</p>
+      <p style="margin-top:8px;">In your terminal, navigate there:</p>
+      <pre><code><span style="color:var(--muted)"># Windows</span>
+cd C:\Users\YourName\Desktop
+
+<span style="color:var(--muted)"># Mac</span>
+cd ~/Desktop</code><button class="copy-btn" onclick="cp(this,'cd ~/Desktop')">Copy</button></pre>
+      <div class="tip"><code>cd</code> means "change directory" — it moves you to a folder.</div>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">2</div>
+      <h3>Create the Next.js project</h3>
+      <p>Copy and paste this single command into your terminal and press Enter. It sets everything up automatically — takes about 2 minutes!</p>
+      <pre><code>npx create-next-app@latest elevate --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"</code><button class="copy-btn" onclick="cp(this,'npx create-next-app@latest elevate --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\"')">Copy</button></pre>
+      <p style="margin-top:10px;">It will ask you some questions — just press <code>Enter</code> to accept the defaults for all of them.</p>
+      <div class="warn">If it asks "Would you like to use..." just press Enter (yes) for everything.</div>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">3</div>
+      <h3>Open the project in VS Code</h3>
+      <pre><code>cd elevate
+code .</code><button class="copy-btn" onclick="cp(this,'cd elevate\ncode .')">Copy</button></pre>
+      <p style="margin-top:10px;">This opens the <code>elevate</code> folder inside VS Code. You'll see all the project files on the left side.</p>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">4</div>
+      <h3>Install all the packages</h3>
+      <p>In VS Code's terminal (<code>Terminal → New Terminal</code>), run:</p>
+      <pre><code>npm install lucide-react next-auth @auth/prisma-adapter prisma @prisma/client @anthropic-ai/sdk razorpay react-hook-form zod @hookform/resolvers</code><button class="copy-btn" onclick="cp(this,'npm install lucide-react next-auth @auth/prisma-adapter prisma @prisma/client @anthropic-ai/sdk razorpay react-hook-form zod @hookform/resolvers')">Copy</button></pre>
+      <div class="tip">This downloads all the extra tools your project needs. It takes 1–2 minutes. You'll see a lot of text scrolling — that's normal!</div>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">5</div>
+      <h3>Start the development server</h3>
+      <pre><code>npm run dev</code><button class="copy-btn" onclick="cp(this,'npm run dev')">Copy</button></pre>
+      <p style="margin-top:10px;">Now open your browser and go to <strong><code>http://localhost:3000</code></strong></p>
+      <p style="margin-top:8px;">You should see the default Next.js welcome page. 🎉 Your project is running!</p>
+      <div class="tip">To stop the server, press <code>Ctrl + C</code> in the terminal.</div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">6</div>
+      <h3>Your project folder structure</h3>
+      <p>Here's what was created and what each folder does:</p>
+      <div class="file-tree">
+<span class="ft-folder">elevate/</span>
+├── <span class="ft-folder">src/</span>
+│   ├── <span class="ft-folder">app/</span>             <span class="ft-comment">← Your pages go here</span>
+│   │   ├── <span class="ft-file">layout.tsx</span>   <span class="ft-comment">← Sidebar, navbar wrapper</span>
+│   │   ├── <span class="ft-file">page.tsx</span>     <span class="ft-comment">← Homepage (localhost:3000)</span>
+│   │   └── <span class="ft-folder">api/</span>         <span class="ft-comment">← Backend code</span>
+│   └── <span class="ft-folder">components/</span>      <span class="ft-comment">← Reusable UI pieces</span>
+├── <span class="ft-folder">public/</span>              <span class="ft-comment">← Images, icons</span>
+├── <span class="ft-file">.env.local</span>           <span class="ft-comment">← Secret keys (DO NOT share!)</span>
+├── <span class="ft-file">package.json</span>         <span class="ft-comment">← Project info & packages</span>
+└── <span class="ft-file">next.config.ts</span>       <span class="ft-comment">← Next.js settings</span>
+      </div>
+    </div>
+
+    <div class="nav-btns">
+      <button class="nav-btn prev" onclick="goTo(0)">← Back</button>
+      <button class="nav-btn next" onclick="goTo(2)">Next: Add Pages →</button>
+    </div>
+  </div>
+
+  <!-- PHASE 3 -->
+  <div class="phase" id="phase-2">
+    <div class="phase-header">
+      <div class="phase-num">3</div>
+      <div><h2>Add Your Pages</h2><p>Copy the Elevate app code into your project. Each page is just a file!</p></div>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">1</div>
+      <h3>How pages work in Next.js</h3>
+      <p>In Next.js, <strong>every file = one page</strong>. The file location decides the URL:</p>
+      <div class="file-tree">
+<span class="ft-file">src/app/page.tsx</span>             <span class="ft-comment">→ localhost:3000/</span>
+<span class="ft-file">src/app/dashboard/page.tsx</span>   <span class="ft-comment">→ localhost:3000/dashboard</span>
+<span class="ft-file">src/app/store/page.tsx</span>       <span class="ft-comment">→ localhost:3000/store</span>
+<span class="ft-file">src/app/forum/page.tsx</span>       <span class="ft-comment">→ localhost:3000/forum</span>
+      </div>
+      <div class="tip">Just create a folder with a <code>page.tsx</code> file inside and Next.js automatically creates that route!</div>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">2</div>
+      <h3>Create the page folders</h3>
+      <p>In your VS Code terminal, run this to create all the page folders at once:</p>
+      <pre><code>mkdir -p src/app/dashboard src/app/profile src/app/ai src/app/courses src/app/store src/app/store/checkout src/app/library src/app/jobs src/app/forum src/app/api/ai src/app/api/auth src/components/ui src/components/layout src/lib</code><button class="copy-btn" onclick="cp(this,'mkdir -p src/app/dashboard src/app/profile src/app/ai src/app/courses src/app/store src/app/store/checkout src/app/library src/app/jobs src/app/forum src/app/api/ai src/app/api/auth src/components/ui src/components/layout src/lib')">Copy</button></pre>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">3</div>
+      <h3>Replace the homepage</h3>
+      <p>Open <code>src/app/page.tsx</code> in VS Code. Delete everything in it and paste this:</p>
+      <pre><code>export default function Home() {
+  return (
+    &lt;main&gt;
+      &lt;h1&gt;Welcome to Elevate&lt;/h1&gt;
+    &lt;/main&gt;
+  );
+}</code><button class="copy-btn" onclick="cp(this,`export default function Home() {\n  return (\n    <main>\n      <h1>Welcome to Elevate</h1>\n    </main>\n  );\n}`)">Copy</button></pre>
+      <div class="tip">Every page file must have <code>export default function</code> — that's what Next.js looks for.</div>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">4</div>
+      <h3>Create your Dashboard page</h3>
+      <p>Create a new file: <code>src/app/dashboard/page.tsx</code> and paste:</p>
+      <pre><code>export default function Dashboard() {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Dashboard&lt;/h1&gt;
+      &lt;p&gt;Welcome back, Arjun!&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}</code><button class="copy-btn" onclick="cp(this,`export default function Dashboard() {\n  return (\n    <div>\n      <h1>Dashboard</h1>\n      <p>Welcome back, Arjun!</p>\n    </div>\n  );\n}`)">Copy</button></pre>
+      <p style="margin-top:10px;">Visit <code>localhost:3000/dashboard</code> — it's live immediately! ✅</p>
+      <p style="margin-top:8px;"><strong>Repeat this for every page</strong> — store, forum, ai, library, jobs, courses.</p>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">5</div>
+      <h3>Create the shared Layout (Sidebar)</h3>
+      <p>Open <code>src/app/layout.tsx</code> — this wraps every page with your sidebar and navbar.</p>
+      <pre><code>import type { Metadata } from "next";
+import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "Elevate – Hardware Design Platform",
+  description: "PCB designers community",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    &lt;html lang="en"&gt;
+      &lt;body style={{ display: "flex", background: "#07030f", color: "#f0e8ff", minHeight: "100vh" }}&gt;
+        {/* Sidebar will go here */}
+        &lt;main style={{ flex: 1 }}&gt;
+          {children}
+        &lt;/main&gt;
+      &lt;/body&gt;
+    &lt;/html&gt;
+  );
+}</code><button class="copy-btn" onclick="cp(this,'// See guide for full code')">Copy</button></pre>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">6</div>
+      <h3>Copy components from the Elevate prototype</h3>
+      <p>Go back to the Elevate App artifact we built. Each component (Store, Forum, AIChat, etc.) can be copied directly into its own file:</p>
+      <ul class="checklist">
+        <li>Copy the <code>Store</code> component → paste into <code>src/app/store/page.tsx</code></li>
+        <li>Copy the <code>Forum</code> component → paste into <code>src/app/forum/page.tsx</code></li>
+        <li>Copy the <code>AIChat</code> component → paste into <code>src/app/ai/page.tsx</code></li>
+        <li>Copy the <code>Jobs</code> component → paste into <code>src/app/jobs/page.tsx</code></li>
+        <li>Copy the <code>Library</code> component → paste into <code>src/app/library/page.tsx</code></li>
+        <li>Copy the <code>CoursePlayer</code> component → paste into <code>src/app/courses/page.tsx</code></li>
+      </ul>
+      <div class="tip">Add <code>"use client";</code> at the very top of any page that uses <code>useState</code> or <code>onClick</code>.</div>
+    </div>
+
+    <div class="nav-btns">
+      <button class="nav-btn prev" onclick="goTo(1)">← Back</button>
+      <button class="nav-btn next" onclick="goTo(3)">Next: Database →</button>
+    </div>
+  </div>
+
+  <!-- PHASE 4 -->
+  <div class="phase" id="phase-3">
+    <div class="phase-header">
+      <div class="phase-num">4</div>
+      <div><h2>Set Up the Database</h2><p>Store users, posts, orders, and products in a free PostgreSQL database using Supabase.</p></div>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">1</div>
+      <h3>Create a free Supabase account</h3>
+      <p>Supabase gives you a free PostgreSQL database — like a giant spreadsheet in the cloud that your app reads and writes to.</p>
+      <a class="download-btn" href="https://supabase.com" target="_blank">🌐 Go to Supabase (Free)</a>
+      <p style="margin-top:12px;">Steps:</p>
+      <ul class="checklist">
+        <li>Click <strong>Start your project</strong> → sign in with GitHub</li>
+        <li>Click <strong>New Project</strong></li>
+        <li>Name it <code>elevate</code>, choose a region close to you (e.g. Singapore for India)</li>
+        <li>Set a strong database password — save it somewhere!</li>
+        <li>Click <strong>Create new project</strong> — takes ~2 minutes to spin up</li>
+      </ul>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">2</div>
+      <h3>Get your database URL</h3>
+      <p>In Supabase → <strong>Settings</strong> → <strong>Database</strong> → copy the <strong>Connection String (URI)</strong>.</p>
+      <p style="margin-top:8px;">It looks like: <code>postgresql://postgres:[YOUR-PASSWORD]@db.xxx.supabase.co:5432/postgres</code></p>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">3</div>
+      <h3>Create your .env.local file</h3>
+      <p>In VS Code, create a new file called <code>.env.local</code> in the root of your project (same level as <code>package.json</code>). Paste this:</p>
+      <pre><code># Database
+DATABASE_URL="paste-your-supabase-url-here"
+
+# NextAuth (run: npx auth secret to generate)
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="paste-a-random-secret-here"
+
+# Anthropic AI
+ANTHROPIC_API_KEY="sk-ant-paste-your-key-here"
+
+# Razorpay
+RAZORPAY_KEY_ID="rzp_test_paste-here"
+RAZORPAY_KEY_SECRET="paste-here"</code><button class="copy-btn" onclick="cp(this,'# See guide')">Copy</button></pre>
+      <div class="warn">NEVER share this file or upload it to GitHub. It's already in <code>.gitignore</code> by default.</div>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">4</div>
+      <h3>Set up Prisma (database connector)</h3>
+      <pre><code>npx prisma init</code><button class="copy-btn" onclick="cp(this,'npx prisma init')">Copy</button></pre>
+      <p style="margin-top:10px;">This creates a <code>prisma/schema.prisma</code> file. Open it and replace ALL the content with the full schema from the Next.js guide artifact.</p>
+      <p style="margin-top:8px;">Then run:</p>
+      <pre><code>npx prisma generate
+npx prisma db push</code><button class="copy-btn" onclick="cp(this,'npx prisma generate\nnpx prisma db push')">Copy</button></pre>
+      <div class="tip"><code>db push</code> creates all your database tables automatically from the schema. You'll see tables appear in Supabase!</div>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">5</div>
+      <h3>Create the Prisma client file</h3>
+      <p>Create <code>src/lib/prisma.ts</code> and paste:</p>
+      <pre><code>import { PrismaClient } from "@prisma/client";
+
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient;
+};
+
+export const prisma =
+  globalForPrisma.prisma ?? new PrismaClient();
+
+if (process.env.NODE_ENV !== "production")
+  globalForPrisma.prisma = prisma;</code><button class="copy-btn" onclick="cp(this,`import { PrismaClient } from \"@prisma/client\";\n\nconst globalForPrisma = globalThis as unknown as {\n  prisma: PrismaClient;\n};\n\nexport const prisma =\n  globalForPrisma.prisma ?? new PrismaClient();\n\nif (process.env.NODE_ENV !== \"production\")\n  globalForPrisma.prisma = prisma;`)">Copy</button></pre>
+    </div>
+
+    <div class="nav-btns">
+      <button class="nav-btn prev" onclick="goTo(2)">← Back</button>
+      <button class="nav-btn next" onclick="goTo(4)">Next: AI & Payments →</button>
+    </div>
+  </div>
+
+  <!-- PHASE 5 -->
+  <div class="phase" id="phase-4">
+    <div class="phase-header">
+      <div class="phase-num">5</div>
+      <div><h2>Connect AI & Payments</h2><p>Get your API keys and wire up the Anthropic AI and Razorpay payment gateway.</p></div>
+    </div>
+
+    <div class="tool-grid">
+      <div class="tool-card">
+        <div class="ti">🤖</div>
+        <h4>Anthropic AI</h4>
+        <p>Powers the AI Assistant & schematic review</p>
+        <a href="https://console.anthropic.com" target="_blank">Get API Key →</a>
+      </div>
+      <div class="tool-card">
+        <div class="ti">💳</div>
+        <h4>Razorpay</h4>
+        <p>Handles store payments (India)</p>
+        <a href="https://razorpay.com" target="_blank">Sign Up Free →</a>
+      </div>
+      <div class="tool-card">
+        <div class="ti">🔐</div>
+        <h4>Google OAuth</h4>
+        <p>Login with Google button</p>
+        <a href="https://console.cloud.google.com" target="_blank">Set Up →</a>
+      </div>
+      <div class="tool-card">
+        <div class="ti">🐙</div>
+        <h4>GitHub OAuth</h4>
+        <p>Login with GitHub button</p>
+        <a href="https://github.com/settings/developers" target="_blank">Set Up →</a>
+      </div>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">1</div>
+      <h3>Get your Anthropic API Key</h3>
+      <ul class="checklist">
+        <li>Go to <strong>console.anthropic.com</strong> → sign up</li>
+        <li>Click <strong>API Keys</strong> → <strong>Create Key</strong></li>
+        <li>Copy the key (starts with <code>sk-ant-...</code>)</li>
+        <li>Paste it into <code>.env.local</code> as <code>ANTHROPIC_API_KEY</code></li>
+      </ul>
+      <div class="warn">You get $5 free credit to start — enough for hundreds of AI conversations during development.</div>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">2</div>
+      <h3>Create the AI API Route</h3>
+      <p>Create file: <code>src/app/api/ai/route.ts</code></p>
+      <pre><code>import { NextRequest, NextResponse } from "next/server";
+import Anthropic from "@anthropic-ai/sdk";
+
+const client = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
+
+export async function POST(req: NextRequest) {
+  const { messages } = await req.json();
+
+  const response = await client.messages.create({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 1024,
+    system: "You are Elevate AI, an expert PCB and hardware design assistant.",
+    messages,
+  });
+
+  return NextResponse.json({
+    reply: response.content[0]
+  });
+}</code><button class="copy-btn" onclick="cp(this,'// AI route — see guide')">Copy</button></pre>
+      <div class="tip">The API key stays on the server — users can never see it. This is safe!</div>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">3</div>
+      <h3>Get your Razorpay Keys</h3>
+      <ul class="checklist">
+        <li>Go to <strong>razorpay.com</strong> → sign up (free)</li>
+        <li>Go to <strong>Settings → API Keys</strong></li>
+        <li>Click <strong>Generate Test Key</strong></li>
+        <li>Copy <strong>Key ID</strong> and <strong>Key Secret</strong> into <code>.env.local</code></li>
+      </ul>
+      <div class="tip">Use <strong>Test Mode</strong> during development. Use test card: <code>4111 1111 1111 1111</code>, any future expiry, any CVV.</div>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">4</div>
+      <h3>Test everything locally</h3>
+      <pre><code>npm run dev</code><button class="copy-btn" onclick="cp(this,'npm run dev')">Copy</button></pre>
+      <ul class="checklist">
+        <li>Open <code>localhost:3000</code> — homepage loads</li>
+        <li>Open <code>localhost:3000/dashboard</code> — dashboard loads</li>
+        <li>Open <code>localhost:3000/ai</code> — try sending a message to AI</li>
+        <li>Open <code>localhost:3000/store</code> — add items to cart, test checkout</li>
+        <li>Open <code>localhost:3000/forum</code> — browse posts</li>
+      </ul>
+    </div>
+
+    <div class="nav-btns">
+      <button class="nav-btn prev" onclick="goTo(3)">← Back</button>
+      <button class="nav-btn next" onclick="goTo(5)">Next: Go Live! →</button>
+    </div>
+  </div>
+
+  <!-- PHASE 6 -->
+  <div class="phase" id="phase-5">
+    <div class="phase-header">
+      <div class="phase-num">6</div>
+      <div><h2>Deploy & Go Live!</h2><p>Put your website on the internet for free using GitHub + Vercel. Takes about 10 minutes.</p></div>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">1</div>
+      <h3>Create a GitHub account & repo</h3>
+      <a class="download-btn" href="https://github.com" target="_blank">🐙 Go to GitHub (Free)</a>
+      <ul class="checklist" style="margin-top:12px;">
+        <li>Sign up at <strong>github.com</strong></li>
+        <li>Click <strong>New Repository</strong> → name it <code>elevate</code></li>
+        <li>Set it to <strong>Private</strong> (keeps your code safe)</li>
+        <li>Click <strong>Create Repository</strong></li>
+      </ul>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">2</div>
+      <h3>Upload your code to GitHub</h3>
+      <p>In your VS Code terminal, run these one by one:</p>
+      <pre><code>git init
+git add .
+git commit -m "Initial Elevate commit"
+git branch -M main
+git remote add origin https://github.com/YOUR-USERNAME/elevate.git
+git push -u origin main</code><button class="copy-btn" onclick="cp(this,'git init\ngit add .\ngit commit -m \"Initial Elevate commit\"\ngit branch -M main\ngit remote add origin https://github.com/YOUR-USERNAME/elevate.git\ngit push -u origin main')">Copy</button></pre>
+      <div class="warn">Replace <code>YOUR-USERNAME</code> with your actual GitHub username.</div>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">3</div>
+      <h3>Deploy to Vercel (free hosting)</h3>
+      <a class="download-btn" href="https://vercel.com" target="_blank">▲ Go to Vercel (Free)</a>
+      <ul class="checklist" style="margin-top:12px;">
+        <li>Sign up at <strong>vercel.com</strong> with your GitHub account</li>
+        <li>Click <strong>Add New → Project</strong></li>
+        <li>Find and select your <code>elevate</code> GitHub repo → click <strong>Import</strong></li>
+        <li>Leave all settings as default</li>
+        <li>Click <strong>Deploy</strong> — wait ~2 minutes</li>
+      </ul>
+      <div class="tip">Every time you push code to GitHub, Vercel automatically re-deploys. No extra steps!</div>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">4</div>
+      <h3>Add your environment variables to Vercel</h3>
+      <p>In Vercel → your project → <strong>Settings → Environment Variables</strong>. Add every variable from your <code>.env.local</code> file:</p>
+      <ul class="checklist">
+        <li>Add <code>DATABASE_URL</code></li>
+        <li>Add <code>NEXTAUTH_SECRET</code></li>
+        <li>Add <code>NEXTAUTH_URL</code> → change value to your Vercel domain e.g. <code>https://elevate.vercel.app</code></li>
+        <li>Add <code>ANTHROPIC_API_KEY</code></li>
+        <li>Add <code>RAZORPAY_KEY_ID</code> and <code>RAZORPAY_KEY_SECRET</code></li>
+      </ul>
+      <p style="margin-top:10px;">After adding all variables, click <strong>Redeploy</strong> in the Deployments tab.</p>
+    </div>
+
+    <div class="step-card highlight">
+      <div class="step-num">5</div>
+      <h3>Your site is live! 🎉</h3>
+      <p>Vercel gives you a free URL like <code>https://elevate-xyz.vercel.app</code>. Share it with anyone!</p>
+      <div class="tip">Want a custom domain like <code>elevate.in</code>? Buy one from Namecheap (~₹800/yr) and connect it in Vercel → Settings → Domains.</div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">6</div>
+      <h3>Future updates — how to push changes</h3>
+      <p>Every time you change your code and want to update the live site:</p>
+      <pre><code>git add .
+git commit -m "Describe what you changed"
+git push</code><button class="copy-btn" onclick="cp(this,'git add .\ngit commit -m \"your change description\"\ngit push')">Copy</button></pre>
+      <p style="margin-top:8px;">Vercel detects the push and re-deploys automatically in ~60 seconds. ⚡</p>
+    </div>
+
+    <div class="congrats">
+      <div class="big">🎉</div>
+      <h2>You Did It!</h2>
+      <p>You've gone from zero coding experience to building and deploying a full-stack hardware design platform on the internet. That's genuinely impressive.</p>
+      <a class="download-btn" href="https://vercel.com" target="_blank">▲ Open Vercel Dashboard</a>
+      <a class="download-btn secondary" href="https://github.com" target="_blank">🐙 Open GitHub</a>
+    </div>
+
+    <div class="nav-btns">
+      <button class="nav-btn prev" onclick="goTo(4)">← Back</button>
+      <div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let cur=0;
+  function goTo(n){
+    document.getElementById('phase-'+cur).classList.remove('active');
+    document.querySelectorAll('.pb')[cur].classList.remove('active');
+    if(n>cur) document.querySelectorAll('.pb')[cur].classList.add('done');
+    cur=n;
+    document.getElementById('phase-'+cur).classList.add('active');
+    document.querySelectorAll('.pb')[cur].classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function cp(btn,text){
+    navigator.clipboard.writeText(text).then(()=>{
+      btn.textContent='Copied ✓';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    });
+  }
+</script>
+</body>
+</html>

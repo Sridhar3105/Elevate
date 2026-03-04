@@ -1,0 +1,893 @@
+ELEVATE – NEXT.JS PROJECT · ALL FILES
+============================================================
+
+HOW TO USE:
+1. Create your Next.js project: npx create-next-app@latest elevate --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"
+2. Create each file at the path shown below
+3. Run: npm install && npx prisma db push && npm run dev
+
+============================================================
+
+
+────────────────────────────────────────────────────────────
+FILE: package.json
+────────────────────────────────────────────────────────────
+{
+  "name": "elevate",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:push": "prisma db push",
+    "db:generate": "prisma generate",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.27.0",
+    "@auth/prisma-adapter": "^2.4.2",
+    "@hookform/resolvers": "^3.9.0",
+    "@prisma/client": "^5.19.0",
+    "lucide-react": "^0.439.0",
+    "next": "15.0.0",
+    "next-auth": "^5.0.0-beta.20",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.53.0",
+    "razorpay": "^2.9.2",
+    "zod": "^3.23.8",
+    "zustand": "^4.5.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "15.0.0",
+    "postcss": "^8",
+    "prisma": "^5.19.0",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
+}
+
+────────────────────────────────────────────────────────────
+FILE: .env.example
+────────────────────────────────────────────────────────────
+# Copy this file to .env.local and fill in your values
+
+# DATABASE (Supabase free tier → supabase.com)
+DATABASE_URL="postgresql://postgres:[PASSWORD]@db.[REF].supabase.co:5432/postgres"
+
+# NEXTAUTH
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="run: openssl rand -base64 32"
+
+# GOOGLE OAUTH (console.cloud.google.com)
+GOOGLE_CLIENT_ID="xxxx.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="GOCSPX-xxxx"
+
+# GITHUB OAUTH (github.com/settings/developers)
+GITHUB_CLIENT_ID="Ov23li-xxxx"
+GITHUB_CLIENT_SECRET="xxxx"
+
+# ANTHROPIC AI (console.anthropic.com)
+ANTHROPIC_API_KEY="sk-ant-xxxx"
+
+# RAZORPAY (razorpay.com → Settings → API Keys)
+RAZORPAY_KEY_ID="rzp_test_xxxx"
+RAZORPAY_KEY_SECRET="xxxx"
+
+────────────────────────────────────────────────────────────
+FILE: next.config.ts
+────────────────────────────────────────────────────────────
+import type { NextConfig } from "next";
+const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "avatars.githubusercontent.com" },
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
+    ],
+  },
+};
+export default nextConfig;
+
+────────────────────────────────────────────────────────────
+FILE: tailwind.config.ts
+────────────────────────────────────────────────────────────
+import type { Config } from "tailwindcss";
+const config: Config = {
+  content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
+  theme: {
+    extend: {
+      colors: {
+        bg: "#07030f", card: "#110a1f", card2: "#0e0819",
+        border: "#2d1f45", pink: "#e879f9", violet: "#a855f7",
+        purple: "#7c3aed", muted: "#7c6a9a",
+      },
+    },
+  },
+  plugins: [],
+};
+export default config;
+
+────────────────────────────────────────────────────────────
+FILE: tsconfig.json
+────────────────────────────────────────────────────────────
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom","dom.iterable","esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [{ "name": "next" }],
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["next-env.d.ts","**/*.ts","**/*.tsx",".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+
+────────────────────────────────────────────────────────────
+FILE: README.md
+────────────────────────────────────────────────────────────
+# Elevate – Hardware Design Platform
+
+Full-stack Next.js 15 platform for PCB designers.
+
+## Quick Start
+
+```bash
+git clone https://github.com/YOUR_USERNAME/elevate.git
+cd elevate
+npm install
+cp .env.example .env.local
+# Fill in .env.local values
+npx prisma generate
+npx prisma db push
+npm run dev
+```
+
+Open http://localhost:3000
+
+## Stack
+- Next.js 15 + TypeScript + Tailwind CSS
+- NextAuth v5 (Google, GitHub)
+- PostgreSQL (Supabase) + Prisma ORM
+- Anthropic Claude AI
+- Razorpay Payments
+- Vercel Hosting
+
+## Deploy
+```bash
+npm i -g vercel && vercel --prod
+```
+
+
+────────────────────────────────────────────────────────────
+FILE: prisma/schema.prisma
+────────────────────────────────────────────────────────────
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  role          String    @default("designer")
+  bio           String?
+  location      String?
+  hourlyRate    Float?
+  skills        String[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+  projects      Project[]
+  posts         Post[]
+  replies       Reply[]
+  orders        Order[]
+  savedJobs     Job[]     @relation("SavedJobs")
+}
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  tags        String[]
+  status      String   @default("draft")
+  views       Int      @default(0)
+  likes       Int      @default(0)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  category  String
+  tags      String[]
+  votes     Int      @default(0)
+  views     Int      @default(0)
+  solved    Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replies   Reply[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+model Reply {
+  id        String   @id @default(cuid())
+  body      String
+  votes     Int      @default(0)
+  accepted  Boolean  @default(false)
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+model Product {
+  id          String      @id @default(cuid())
+  name        String
+  brand       String
+  category    String
+  description String
+  price       Float
+  origPrice   Float
+  discount    Int         @default(0)
+  stock       Int         @default(0)
+  icon        String      @default("🔩")
+  badge       String?
+  rating      Float       @default(0)
+  reviews     Int         @default(0)
+  orderItems  OrderItem[]
+  createdAt   DateTime    @default(now())
+}
+model Order {
+  id         String      @id @default(cuid())
+  userId     String
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items      OrderItem[]
+  total      Float
+  status     String      @default("pending")
+  razorpayId String?
+  address    Json
+  createdAt  DateTime    @default(now())
+}
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float
+}
+model Job {
+  id           String   @id @default(cuid())
+  title        String
+  company      String
+  location     String
+  type         String
+  pay          String
+  tags         String[]
+  description  String
+  requirements String[]
+  remote       Boolean  @default(false)
+  savedBy      User[]   @relation("SavedJobs")
+  createdAt    DateTime @default(now())
+}
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+}
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  @@unique([identifier, token])
+}
+
+────────────────────────────────────────────────────────────
+FILE: src/lib/prisma.ts
+────────────────────────────────────────────────────────────
+import { PrismaClient } from "@prisma/client";
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
+export const prisma = globalForPrisma.prisma ?? new PrismaClient({ log: ["query"] });
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+
+────────────────────────────────────────────────────────────
+FILE: src/lib/auth.ts
+────────────────────────────────────────────────────────────
+import NextAuth from "next-auth";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import GoogleProvider from "next-auth/providers/google";
+import GithubProvider from "next-auth/providers/github";
+import { prisma } from "./prisma";
+export const { handlers, signIn, signOut, auth } = NextAuth({
+  adapter: PrismaAdapter(prisma),
+  providers: [
+    GoogleProvider({ clientId: process.env.GOOGLE_CLIENT_ID!, clientSecret: process.env.GOOGLE_CLIENT_SECRET! }),
+    GithubProvider({ clientId: process.env.GITHUB_CLIENT_ID!, clientSecret: process.env.GITHUB_CLIENT_SECRET! }),
+  ],
+  pages: { signIn: "/login" },
+  callbacks: {
+    session({ session, user }) {
+      if (session.user) session.user.id = user.id;
+      return session;
+    },
+  },
+  session: { strategy: "database" },
+});
+
+────────────────────────────────────────────────────────────
+FILE: src/lib/utils.ts
+────────────────────────────────────────────────────────────
+import { type ClassValue, clsx } from "clsx";
+export function cn(...inputs: ClassValue[]) { return clsx(inputs); }
+export function formatPrice(amount: number, currency = "INR") {
+  return new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 0 }).format(amount);
+}
+export function timeAgo(date: Date | string) {
+  const s = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
+  if (s < 60) return "just now";
+  if (s < 3600) return Math.floor(s / 60) + "m ago";
+  if (s < 86400) return Math.floor(s / 3600) + "h ago";
+  return Math.floor(s / 86400) + "d ago";
+}
+export function truncate(str: string, len: number) {
+  return str.length > len ? str.slice(0, len) + "…" : str;
+}
+
+────────────────────────────────────────────────────────────
+FILE: src/types/index.ts
+────────────────────────────────────────────────────────────
+export type UserRole = "designer" | "student" | "company";
+export interface User { id:string; name:string|null; email:string; image:string|null; role:UserRole; bio:string|null; location:string|null; hourlyRate:number|null; skills:string[]; createdAt:Date; }
+export interface Project { id:string; title:string; description:string; tags:string[]; status:string; views:number; likes:number; userId:string; user?:User; createdAt:Date; }
+export interface Post { id:string; title:string; body:string; category:string; tags:string[]; votes:number; views:number; solved:boolean; userId:string; user?:User; replies?:Reply[]; createdAt:Date; }
+export interface Reply { id:string; body:string; votes:number; accepted:boolean; postId:string; userId:string; user?:User; createdAt:Date; }
+export interface Product { id:string; name:string; brand:string; category:string; description:string; price:number; origPrice:number; discount:number; stock:number; icon:string; badge:string|null; rating:number; reviews:number; }
+export interface CartItem { product:Product; quantity:number; }
+export interface Job { id:string; title:string; company:string; location:string; type:string; pay:string; tags:string[]; description:string; requirements:string[]; remote:boolean; createdAt:Date; }
+export interface ShippingAddress { name:string; email:string; phone:string; address:string; city:string; pin:string; state:string; }
+export interface AIMessage { role:"user"|"assistant"; content:string; }
+
+────────────────────────────────────────────────────────────
+FILE: src/hooks/useCart.ts
+────────────────────────────────────────────────────────────
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import type { CartItem, Product } from "@/types";
+interface CartStore {
+  cart: CartItem[];
+  addToCart: (product: Product) => void;
+  removeFromCart: (productId: string) => void;
+  updateQty: (productId: string, qty: number) => void;
+  clearCart: () => void;
+  total: () => number;
+}
+export const useCart = create<CartStore>()(
+  persist(
+    (set, get) => ({
+      cart: [],
+      addToCart: (product) => {
+        const ex = get().cart.find(i => i.product.id === product.id);
+        if (ex) set(s => ({ cart: s.cart.map(i => i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i) }));
+        else set(s => ({ cart: [...s.cart, { product, quantity: 1 }] }));
+      },
+      removeFromCart: (id) => set(s => ({ cart: s.cart.filter(i => i.product.id !== id) })),
+      updateQty: (id, qty) => set(s => ({ cart: s.cart.map(i => i.product.id === id ? { ...i, quantity: qty } : i) })),
+      clearCart: () => set({ cart: [] }),
+      total: () => get().cart.reduce((s, i) => s + i.product.price * 84 * i.quantity, 0),
+    }),
+    { name: "elevate-cart" }
+  )
+);
+
+────────────────────────────────────────────────────────────
+FILE: src/app/globals.css
+────────────────────────────────────────────────────────────
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root { --bg:#07030f;--card:#110a1f;--card2:#0e0819;--border:#2d1f45;--pink:#e879f9;--violet:#a855f7;--purple:#7c3aed;--text:#f0e8ff;--muted:#7c6a9a; }
+*{ box-sizing:border-box; }
+body{ background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif; }
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--card);}
+::-webkit-scrollbar-thumb{background:var(--purple);border-radius:4px;}
+.grad-text{background:linear-gradient(135deg,#e879f9,#a855f7,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.btn-gradient{background:linear-gradient(135deg,#e879f9,#7c3aed);color:white;box-shadow:0 0 16px rgba(168,85,247,.28);}
+.pcb-grid{background-image:linear-gradient(rgba(168,85,247,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(168,85,247,.04) 1px,transparent 1px);background-size:44px 44px;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.fade-in{animation:fadeIn .28s ease;}
+@keyframes pulse-dot{0%,100%{opacity:.4;}50%{opacity:1;}}
+.typing-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--violet);animation:pulse-dot 1.2s infinite;}
+.typing-dot:nth-child(2){animation-delay:.2s;}
+.typing-dot:nth-child(3){animation-delay:.4s;}
+
+────────────────────────────────────────────────────────────
+FILE: src/app/layout.tsx
+────────────────────────────────────────────────────────────
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { auth } from "@/lib/auth";
+import { SessionProvider } from "next-auth/react";
+const inter = Inter({ subsets: ["latin"] });
+export const metadata: Metadata = {
+  title: "Elevate – Hardware Design Platform",
+  description: "The platform where PCB designers showcase talent, freelance, learn, and collaborate.",
+};
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth();
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+        <SessionProvider session={session}>{children}</SessionProvider>
+      </body>
+    </html>
+  );
+}
+
+────────────────────────────────────────────────────────────
+FILE: src/app/page.tsx
+────────────────────────────────────────────────────────────
+import Link from "next/link";
+export default function LandingPage() {
+  return (
+    <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
+      <nav style={{ display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 6%",position:"fixed",width:"100%",top:0,zIndex:100,background:"rgba(7,3,15,0.9)",backdropFilter:"blur(12px)",borderBottom:"1px solid var(--border)" }}>
+        <div className="grad-text" style={{ fontSize:"1.4rem",fontWeight:900 }}>Elevate</div>
+        <div style={{ display:"flex",gap:10 }}>
+          <Link href="/login" style={{ padding:"8px 18px",borderRadius:8,border:"1px solid var(--border)",color:"var(--text)",fontWeight:600,fontSize:".88rem",textDecoration:"none" }}>Sign In</Link>
+          <Link href="/login" style={{ padding:"9px 20px",borderRadius:8,background:"linear-gradient(135deg,#e879f9,#7c3aed)",color:"#fff",fontWeight:800,fontSize:".88rem",textDecoration:"none" }}>Join Free</Link>
+        </div>
+      </nav>
+      <section style={{ minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"130px 6% 80px",position:"relative" }} className="pcb-grid">
+        <div style={{ maxWidth:820,position:"relative",zIndex:2 }}>
+          <div style={{ display:"inline-block",background:"rgba(168,85,247,.1)",border:"1px solid rgba(168,85,247,.3)",color:"var(--pink)",padding:"7px 18px",borderRadius:24,fontSize:".78rem",fontWeight:700,marginBottom:26 }}>⚡ Built for Hardware Engineers</div>
+          <h1 style={{ fontSize:"clamp(2.4rem,5.5vw,4rem)",fontWeight:900,lineHeight:1.08,marginBottom:22 }}>
+            The Platform That<br/><span className="grad-text">Elevates Hardware</span><br/>Designers
+          </h1>
+          <p style={{ fontSize:"1.1rem",color:"var(--muted)",maxWidth:580,margin:"0 auto 38px",lineHeight:1.75 }}>
+            Showcase PCB projects, freelance with top companies, learn from experts, simulate circuits, shop components, and harness AI — all in one place.
+          </p>
+          <div style={{ display:"flex",gap:14,justifyContent:"center",flexWrap:"wrap" }}>
+            <Link href="/login" style={{ padding:"14px 32px",borderRadius:9,background:"linear-gradient(135deg,#e879f9,#7c3aed)",color:"#fff",fontWeight:800,fontSize:"1rem",textDecoration:"none",boxShadow:"0 0 24px rgba(168,85,247,.4)" }}>🚀 Get Started Free</Link>
+            <Link href="/dashboard" style={{ padding:"14px 32px",borderRadius:9,border:"1px solid var(--border)",color:"var(--text)",fontWeight:600,fontSize:"1rem",textDecoration:"none" }}>View Demo →</Link>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+────────────────────────────────────────────────────────────
+FILE: src/app/(app)/layout.tsx
+────────────────────────────────────────────────────────────
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import Sidebar from "@/components/layout/Sidebar";
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth();
+  if (!session) redirect("/login");
+  return (
+    <div className="flex h-screen overflow-hidden" style={{ background:"var(--bg)" }}>
+      <Sidebar user={session.user} />
+      <main className="flex-1 overflow-hidden flex flex-col">{children}</main>
+    </div>
+  );
+}
+
+────────────────────────────────────────────────────────────
+FILE: src/app/(app)/dashboard/page.tsx
+────────────────────────────────────────────────────────────
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+export default async function DashboardPage() {
+  const session = await auth();
+  const projects = await prisma.project.findMany({ where:{ userId:session!.user.id }, orderBy:{ updatedAt:"desc" }, take:5 });
+  const feed = await prisma.post.findMany({ orderBy:{ createdAt:"desc" }, take:4, include:{ user:true } });
+  return (
+    <div className="fade-in p-8 flex-1 overflow-y-auto">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-black">Good morning, {session!.user.name?.split(" ")[0]} 👋</h1>
+          <p style={{ color:"var(--muted)",fontSize:".85rem",marginTop:4 }}>Here's your overview for today.</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-4 gap-4 mb-6">
+        {[{l:"Projects",v:projects.length,i:"🗂️"},{l:"Profile Views",v:"1.4K",i:"👁️"},{l:"Proposals",v:"7",i:"💼"},{l:"Course",v:"64%",i:"🎓"}].map(s=>(
+          <div key={s.l} style={{ background:"var(--card)",border:"1px solid var(--border)",borderRadius:14,padding:"16px 18px" }}>
+            <div className="flex justify-between">
+              <div>
+                <div style={{ color:"var(--muted)",fontSize:".72rem",fontWeight:600,marginBottom:6 }}>{s.l}</div>
+                <div style={{ fontSize:"1.6rem",fontWeight:900 }}>{s.v}</div>
+              </div>
+              <span style={{ fontSize:"1.4rem" }}>{s.i}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="grid gap-4" style={{ gridTemplateColumns:"1.5fr 1fr" }}>
+        <div style={{ background:"var(--card)",border:"1px solid var(--border)",borderRadius:14,padding:20 }}>
+          <h2 className="font-black mb-4">My Projects</h2>
+          {projects.map(p=>(
+            <div key={p.id} style={{ display:"flex",alignItems:"center",gap:12,padding:"10px 12px",background:"var(--card2)",borderRadius:10,border:"1px solid var(--border)",marginBottom:8 }}>
+              <div style={{ width:6,height:6,borderRadius:"50%",background:p.status==="published"?"#22c55e":p.status==="review"?"#f59e0b":"#7c6a9a",flexShrink:0 }}/>
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:".85rem",fontWeight:700 }}>{p.title}</div>
+                <div style={{ display:"flex",gap:4,marginTop:4 }}>{p.tags.slice(0,2).map(t=><span key={t} style={{ fontSize:".66rem",padding:"2px 7px",borderRadius:12,background:"rgba(168,85,247,.1)",border:"1px solid rgba(168,85,247,.2)",color:"var(--violet)" }}>{t}</span>)}</div>
+              </div>
+              <div style={{ fontSize:".68rem",color:"var(--muted)" }}>{p.status}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ background:"var(--card)",border:"1px solid var(--border)",borderRadius:14,padding:20 }}>
+          <h2 className="font-black mb-4">Activity</h2>
+          {feed.map((f,i)=>(
+            <div key={i} style={{ display:"flex",gap:9,alignItems:"flex-start",marginBottom:13 }}>
+              <div style={{ width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#e879f9,#7c3aed)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:".65rem",fontWeight:900,color:"#fff",flexShrink:0 }}>{f.user.name?.[0]??"U"}</div>
+              <div><div style={{ fontSize:".79rem" }}><b>{f.user.name}</b> <span style={{ color:"var(--muted)" }}>posted in {f.category}</span></div><div style={{ fontSize:".65rem",color:"var(--muted)",marginTop:2 }}>{f.title.slice(0,40)}…</div></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+────────────────────────────────────────────────────────────
+FILE: src/app/(app)/ai/page.tsx
+────────────────────────────────────────────────────────────
+"use client";
+import { useState, useRef, useEffect } from "react";
+import type { AIMessage } from "@/types";
+export default function AIPage() {
+  const [msgs, setMsgs] = useState<AIMessage[]>([{ role:"assistant", content:"👋 Hi! I'm Elevate AI — your expert PCB design co-pilot. Ask me anything or upload a schematic for review!" }]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [file, setFile] = useState<File|null>(null);
+  const [fileData, setFileData] = useState<string|null>(null);
+  const [fileType, setFileType] = useState<string|null>(null);
+  const bottom = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  useEffect(() => { bottom.current?.scrollIntoView({ behavior:"smooth" }); }, [msgs, loading]);
+  function handleFile(f: File) {
+    setFile(f);
+    const reader = new FileReader();
+    reader.onload = e => { setFileData((e.target!.result as string).split(",")[1]); setFileType(f.type); };
+    reader.readAsDataURL(f);
+  }
+  async function send() {
+    const q = input.trim(); if ((!q && !file) || loading) return;
+    setInput("");
+    const userMsg: AIMessage = { role:"user", content: q || "Please review this schematic: " + file?.name };
+    const next = [...msgs, userMsg]; setMsgs(next); setLoading(true);
+    try {
+      const res = await fetch("/api/ai", { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ messages: next, fileData, fileType }) });
+      const data = await res.json();
+      setMsgs(m => [...m, { role:"assistant", content: data.reply?.text || "No response." }]);
+    } catch { setMsgs(m => [...m, { role:"assistant", content:"⚠️ Error. Please try again." }]); }
+    setLoading(false); setFile(null); setFileData(null); setFileType(null);
+  }
+  return (
+    <div style={{ flex:1,display:"flex",flexDirection:"column",height:"100vh",overflow:"hidden" }}>
+      <div style={{ padding:"16px 26px",borderBottom:"1px solid var(--border)",background:"var(--card)",display:"flex",alignItems:"center",gap:12 }}>
+        <div style={{ width:36,height:36,borderRadius:"50%",background:"linear-gradient(135deg,#e879f9,#7c3aed)",display:"flex",alignItems:"center",justifyContent:"center" }}>🤖</div>
+        <div><div style={{ fontWeight:800 }}>Elevate AI</div><div style={{ fontSize:".7rem",color:"#22c55e" }}>● Hardware Expert · Schematic Review</div></div>
+      </div>
+      <div style={{ flex:1,overflowY:"auto",padding:"20px 26px",display:"flex",flexDirection:"column",gap:14 }}>
+        {msgs.map((m,i) => (
+          <div key={i} style={{ display:"flex",gap:10,flexDirection:m.role==="user"?"row-reverse":"row",alignItems:"flex-start" }}>
+            <div style={{ width:30,height:30,borderRadius:"50%",background:m.role==="user"?"linear-gradient(135deg,#e879f9,#7c3aed)":"#1a0f2e",border:"1px solid var(--border)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:m.role==="user"?".7rem":"1rem",color:"#fff",flexShrink:0 }}>{m.role==="user"?"U":"🤖"}</div>
+            <div style={{ maxWidth:"74%",background:m.role==="user"?"rgba(232,121,249,.08)":"var(--card)",border:"1px solid var(--border)",borderRadius:m.role==="user"?"18px 4px 18px 18px":"4px 18px 18px 18px",padding:"11px 14px",fontSize:".85rem",whiteSpace:"pre-wrap",lineHeight:1.65 }}>{m.content}</div>
+          </div>
+        ))}
+        {loading && <div style={{ display:"flex",gap:10 }}><div style={{ width:30,height:30,borderRadius:"50%",background:"#1a0f2e",border:"1px solid var(--border)",display:"flex",alignItems:"center",justifyContent:"center" }}>🤖</div><div style={{ background:"var(--card)",border:"1px solid var(--border)",borderRadius:"4px 18px 18px 18px",padding:"13px 17px",display:"flex",gap:5,alignItems:"center" }}><div className="typing-dot"/><div className="typing-dot"/><div className="typing-dot"/></div></div>}
+        <div ref={bottom}/>
+      </div>
+      {file && <div style={{ margin:"0 26px 8px",padding:"10px 14px",background:"rgba(168,85,247,.08)",border:"1px solid rgba(168,85,247,.25)",borderRadius:10,display:"flex",alignItems:"center",gap:10,fontSize:".82rem" }}><span>📎</span><span style={{ flex:1 }}>{file.name}</span><button onClick={()=>{ setFile(null);setFileData(null);}} style={{ background:"none",border:"none",color:"var(--muted)",cursor:"pointer" }}>✕</button></div>}
+      <div style={{ padding:"10px 26px 20px",borderTop:"1px solid var(--border)" }}>
+        <div style={{ display:"flex",gap:9 }}>
+          <button onClick={()=>fileRef.current?.click()} style={{ padding:"10px 14px",borderRadius:10,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer",fontSize:"1rem" }}>📎</button>
+          <input ref={fileRef} type="file" accept="image/*,application/pdf" style={{ display:"none" }} onChange={e=>e.target.files?.[0] && handleFile(e.target.files[0])}/>
+          <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()} placeholder="Ask about PCB design or upload a schematic…" style={{ flex:1,background:"var(--card2)",border:"1px solid var(--border)",borderRadius:10,padding:"10px 14px",color:"var(--text)",fontSize:".85rem",outline:"none" }}/>
+          <button onClick={send} disabled={loading||(!input.trim()&&!file)} style={{ padding:"10px 18px",borderRadius:10,background:"linear-gradient(135deg,#e879f9,#7c3aed)",color:"#fff",border:"none",fontWeight:700,cursor:"pointer",opacity:(loading||(!input.trim()&&!file))?0.5:1 }}>{loading?"…":"Send"}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+────────────────────────────────────────────────────────────
+FILE: src/app/(app)/forum/page.tsx
+────────────────────────────────────────────────────────────
+import { prisma } from "@/lib/prisma";
+import Link from "next/link";
+export default async function ForumPage() {
+  const posts = await prisma.post.findMany({ orderBy:{ createdAt:"desc" }, include:{ user:true, _count:{ select:{ replies:true } } } });
+  const cats = ["All","PCB Design","Signal Integrity","Power Electronics","RF & Wireless","FPGA","Tools & EDA","Career"];
+  return (
+    <div className="fade-in flex-1 overflow-y-auto">
+      <div style={{ padding:"16px 24px",borderBottom:"1px solid var(--border)",background:"var(--card)" }}>
+        <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14 }}>
+          <h1 style={{ fontWeight:900,fontSize:"1.05rem" }}>💬 Community Forum</h1>
+          <button style={{ padding:"8px 16px",borderRadius:10,background:"linear-gradient(135deg,#e879f9,#7c3aed)",color:"#fff",border:"none",fontWeight:700,fontSize:".82rem",cursor:"pointer" }}>+ Ask Question</button>
+        </div>
+        <div style={{ display:"flex",gap:6,flexWrap:"wrap" }}>
+          {cats.map(c=><button key={c} style={{ padding:"5px 12px",borderRadius:20,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",fontSize:".75rem",cursor:"pointer" }}>{c}</button>)}
+        </div>
+      </div>
+      <div style={{ padding:"14px 20px" }}>
+        {posts.map(p=>(
+          <Link key={p.id} href={`/forum/${p.id}`} style={{ textDecoration:"none" }}>
+            <div style={{ padding:"16px 18px",borderRadius:12,border:"1px solid var(--border)",background:"var(--card)",marginBottom:10,cursor:"pointer",display:"flex",gap:14,transition:".2s" }}>
+              <div style={{ display:"flex",flexDirection:"column",alignItems:"center",gap:3,width:40,flexShrink:0 }}>
+                <div style={{ fontSize:".82rem",fontWeight:800,color:"var(--text)" }}>{p.votes}</div>
+                <div style={{ fontSize:".62rem",color:"var(--muted)" }}>votes</div>
+                <div style={{ fontSize:".82rem",fontWeight:700,color:p.solved?"#22c55e":"var(--muted)" }}>{p._count.replies}</div>
+                <div style={{ fontSize:".62rem",color:p.solved?"#22c55e":"var(--muted)" }}>{p.solved?"solved":"ans"}</div>
+              </div>
+              <div style={{ flex:1 }}>
+                <div style={{ fontWeight:700,fontSize:".9rem",color:"var(--text)",marginBottom:6 }}>{p.title}</div>
+                <div style={{ display:"flex",gap:5,flexWrap:"wrap",marginBottom:8 }}>
+                  <span style={{ fontSize:".68rem",padding:"2px 8px",borderRadius:10,background:"rgba(168,85,247,.1)",border:"1px solid rgba(168,85,247,.2)",color:"var(--violet)" }}>{p.category}</span>
+                  {p.tags.slice(0,3).map(t=><span key={t} style={{ fontSize:".66rem",padding:"2px 7px",borderRadius:10,background:"rgba(168,85,247,.08)",color:"var(--muted)" }}>{t}</span>)}
+                </div>
+                <div style={{ fontSize:".73rem",color:"var(--muted)" }}>{p.user.name} · {new Date(p.createdAt).toLocaleDateString()} · {p.views} views</div>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+────────────────────────────────────────────────────────────
+FILE: src/app/(app)/store/page.tsx
+────────────────────────────────────────────────────────────
+import { prisma } from "@/lib/prisma";
+import StorePageClient from "@/components/store/StorePageClient";
+export default async function StorePage() {
+  const products = await prisma.product.findMany({ orderBy:{ reviews:"desc" } });
+  return <StorePageClient products={products} />;
+}
+
+────────────────────────────────────────────────────────────
+FILE: src/app/(app)/jobs/page.tsx
+────────────────────────────────────────────────────────────
+import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import JobsPageClient from "@/components/jobs/JobsPageClient";
+export default async function JobsPage() {
+  const session = await auth();
+  const jobs = await prisma.job.findMany({ orderBy:{ createdAt:"desc" } });
+  return <JobsPageClient jobs={jobs} userId={session!.user.id} />;
+}
+
+────────────────────────────────────────────────────────────
+FILE: src/app/(app)/library/page.tsx
+────────────────────────────────────────────────────────────
+import LibraryPageClient from "@/components/library/LibraryPageClient";
+const COMPONENTS = [
+  { id:"1",name:"STM32F103C8T6",mfr:"STMicro",cat:"MCU",pkg:"LQFP-48",sym:true,fp:true,m3d:true,spice:false,tools:["KiCad","Altium","Eagle"],rating:4.9,dls:8400 },
+  { id:"2",name:"LM358",mfr:"Texas Instruments",cat:"Op-Amp",pkg:"SOIC-8",sym:true,fp:true,m3d:true,spice:true,tools:["KiCad","Altium","Eagle","Allegro"],rating:4.8,dls:12000 },
+  { id:"3",name:"AMS1117-3.3",mfr:"Advanced Mono",cat:"LDO",pkg:"SOT-223",sym:true,fp:true,m3d:true,spice:true,tools:["KiCad","Altium"],rating:4.7,dls:9200 },
+  { id:"4",name:"MPU-6050",mfr:"InvenSense",cat:"IMU",pkg:"QFN-24",sym:true,fp:true,m3d:true,spice:false,tools:["KiCad","Altium","Eagle"],rating:4.7,dls:11000 },
+  { id:"5",name:"IRF540N",mfr:"Infineon",cat:"MOSFET",pkg:"TO-220",sym:true,fp:true,m3d:true,spice:true,tools:["KiCad","Altium","Eagle","Allegro"],rating:4.6,dls:6700 },
+];
+export default function LibraryPage() { return <LibraryPageClient components={COMPONENTS}/>; }
+
+────────────────────────────────────────────────────────────
+FILE: src/app/(app)/courses/page.tsx
+────────────────────────────────────────────────────────────
+import CoursePageClient from "@/components/courses/CoursePageClient";
+const LESSONS = [
+  { id:"1",title:"Introduction to KiCad 7",duration:"12:04",free:true },
+  { id:"2",title:"Setting Up Your Project",duration:"8:32",free:true },
+  { id:"3",title:"Schematic Capture Basics",duration:"22:18",free:true },
+  { id:"4",title:"Component Libraries",duration:"18:44",free:false },
+  { id:"5",title:"Netlist & ERC Check",duration:"14:10",free:false },
+  { id:"6",title:"PCB Layout Editor",duration:"28:56",free:false },
+  { id:"7",title:"Routing Traces & Vias",duration:"31:22",free:false },
+  { id:"8",title:"Design Rule Check",duration:"16:08",free:false },
+  { id:"9",title:"Gerber Export",duration:"19:30",free:false },
+];
+export default function CoursesPage() { return <CoursePageClient lessons={LESSONS}/>; }
+
+────────────────────────────────────────────────────────────
+FILE: src/app/(auth)/login/page.tsx
+────────────────────────────────────────────────────────────
+"use client";
+import { signIn } from "next-auth/react";
+import Link from "next/link";
+export default function LoginPage() {
+  return (
+    <div style={{ minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:24,background:"var(--bg)" }}>
+      <div style={{ width:"100%",maxWidth:420,background:"var(--card)",border:"1px solid var(--border)",borderRadius:20,padding:40 }}>
+        <div style={{ textAlign:"center",marginBottom:28 }}>
+          <div className="grad-text" style={{ fontSize:"1.8rem",fontWeight:900,marginBottom:6 }}>Elevate</div>
+          <p style={{ color:"var(--muted)",fontSize:".9rem" }}>Welcome back, engineer 👋</p>
+        </div>
+        <div style={{ display:"flex",flexDirection:"column",gap:12 }}>
+          {[{ p:"google",l:"🔵 Continue with Google" },{ p:"github",l:"⬛ Continue with GitHub" }].map(({ p,l }) => (
+            <button key={p} onClick={() => signIn(p, { callbackUrl:"/dashboard" })}
+              style={{ width:"100%",padding:"13px",borderRadius:10,border:"1px solid var(--border)",background:"transparent",color:"var(--text)",fontWeight:600,fontSize:".88rem",cursor:"pointer",transition:".2s" }}>{l}</button>
+          ))}
+        </div>
+        <p style={{ textAlign:"center",marginTop:20,color:"var(--muted)",fontSize:".82rem" }}>
+          Don't have an account?{" "}
+          <Link href="/login" style={{ color:"var(--pink)",fontWeight:700 }}>Sign up free</Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+────────────────────────────────────────────────────────────
+FILE: src/app/api/auth/[...nextauth]/route.ts
+────────────────────────────────────────────────────────────
+import { handlers } from "@/lib/auth";
+export const { GET, POST } = handlers;
+
+────────────────────────────────────────────────────────────
+FILE: src/app/api/ai/route.ts
+────────────────────────────────────────────────────────────
+import { NextRequest, NextResponse } from "next/server";
+import Anthropic from "@anthropic-ai/sdk";
+import { auth } from "@/lib/auth";
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+export async function POST(req: NextRequest) {
+  const session = await auth();
+  if (!session) return NextResponse.json({ error:"Unauthorized" }, { status:401 });
+  const { messages, fileData, fileType } = await req.json();
+  const lastContent: any[] = [];
+  if (fileData && fileType) {
+    if (fileType === "application/pdf") lastContent.push({ type:"document", source:{ type:"base64", media_type:"application/pdf", data:fileData } });
+    else lastContent.push({ type:"image", source:{ type:"base64", media_type:fileType, data:fileData } });
+  }
+  lastContent.push({ type:"text", text: messages.at(-1)?.content || "Review this schematic." });
+  const history = messages.slice(0,-1).map((m: any) => ({ role:m.role, content:m.content }));
+  const response = await client.messages.create({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 1024,
+    system: "You are Elevate AI, an expert hardware engineering assistant specialised in PCB design, circuit analysis, component selection, signal integrity, power electronics, EMC/EMI, FPGA, and EDA tools (KiCad, Altium, Eagle). Be concise, practical, and expert-level.",
+    messages: [...history, { role:"user", content:lastContent }],
+  });
+  return NextResponse.json({ reply: response.content[0] });
+}
+
+────────────────────────────────────────────────────────────
+FILE: src/app/api/forum/posts/route.ts
+────────────────────────────────────────────────────────────
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { z } from "zod";
+const Schema = z.object({ title:z.string().min(10), body:z.string().min(20), category:z.string(), tags:z.array(z.string()).max(5) });
+export async function GET(req: NextRequest) {
+  const cat = new URL(req.url).searchParams.get("category");
+  const posts = await prisma.post.findMany({ where:cat?{ category:cat }:undefined, orderBy:{ createdAt:"desc" }, include:{ user:{ select:{ id:true,name:true,image:true } }, _count:{ select:{ replies:true } } } });
+  return NextResponse.json(posts);
+}
+export async function POST(req: NextRequest) {
+  const session = await auth();
+  if (!session) return NextResponse.json({ error:"Unauthorized" }, { status:401 });
+  const data = Schema.parse(await req.json());
+  const post = await prisma.post.create({ data:{ ...data, userId:session.user.id } });
+  return NextResponse.json(post, { status:201 });
+}
+
+────────────────────────────────────────────────────────────
+FILE: src/app/api/store/products/route.ts
+────────────────────────────────────────────────────────────
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+export async function GET() {
+  const products = await prisma.product.findMany({ orderBy:{ reviews:"desc" } });
+  return NextResponse.json(products);
+}
+
+────────────────────────────────────────────────────────────
+FILE: src/app/api/razorpay/route.ts
+────────────────────────────────────────────────────────────
+import { NextRequest, NextResponse } from "next/server";
+import Razorpay from "razorpay";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+const rzp = new Razorpay({ key_id:process.env.RAZORPAY_KEY_ID!, key_secret:process.env.RAZORPAY_KEY_SECRET! });
+export async function POST(req: NextRequest) {
+  const session = await auth();
+  if (!session) return NextResponse.json({ error:"Unauthorized" }, { status:401 });
+  const { items, address } = await req.json();
+  const subtotal = items.reduce((s: number, i: any) => s + i.price * i.quantity, 0);
+  const total = subtotal + (subtotal > 500 ? 0 : 49);
+  const rzpOrder = await rzp.orders.create({ amount:Math.round(total*100), currency:"INR", receipt:`elv_${Date.now()}` });
+  const order = await prisma.order.create({ data:{ userId:session.user.id, total, razorpayId:rzpOrder.id, address, items:{ create:items.map((i: any) => ({ productId:i.productId, quantity:i.quantity, price:i.price })) } } });
+  return NextResponse.json({ orderId:rzpOrder.id, amount:rzpOrder.amount, dbOrderId:order.id, keyId:process.env.RAZORPAY_KEY_ID });
+}
+
+────────────────────────────────────────────────────────────
+FILE: src/components/layout/Sidebar.tsx
+────────────────────────────────────────────────────────────
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
+const NAV = [
+  { href:"/dashboard",icon:"⬡",label:"Dashboard" },
+  { href:"/profile",icon:"👤",label:"My Profile" },
+  { href:"/ai",icon:"🤖",label:"AI Assistant" },
+  { href:"/courses",icon:"🎓",label:"Courses" },
+  { href:"/store",icon:"🛒",label:"Store" },
+  { href:"/library",icon:"📦",label:"Library" },
+  { href:"/jobs",icon:"💼",label:"Jobs" },
+  { href:"/forum",icon:"💬",label:"Community" },
+];
+export default function Sidebar({ user }: { user: any }) {
+  const path = usePathname();
+  return (
+    <div style={{ width:218,background:"var(--card)",borderRight:"1px solid var(--border)",display:"flex",flexDirection:"column",padding:"0 10px 20px",flexShrink:0 }}>
+      <div style={{ padding:"18px 8px 20px",borderBottom:"1px solid var(--border)",marginBottom:10 }}>
+        <div className="grad-text" style={{ fontSize:"1.4rem",fontWeight:900 }}>Elevate</div>
+        <div style={{ fontSize:".66rem",color:"var(--muted)",marginTop:1 }}>Hardware Design Platform</div>
+      </div>
+      {NAV.map(item => {
+        const active = path.startsWith(item.href);
+        return (
+          <Link key={item.href} href={item.href} style={{ display:"flex",alignItems:"center",gap:11,padding:"10px 13px",borderRadius:11,fontSize:".85rem",fontWeight:active?700:500,color:active?"var(--pink)":"var(--muted)",background:active?"rgba(168,85,247,.14)":"transparent",textDecoration:"none",transition:".15s",borderLeft:active?"2px solid var(--pink)":"2px solid transparent",marginBottom:2 }}>
+            <span style={{ fontSize:"1rem" }}>{item.icon}</span>{item.label}
+          </Link>
+        );
+      })}
+      <div style={{ marginTop:"auto",padding:12,background:"rgba(168,85,247,.07)",borderRadius:12,border:"1px solid var(--border)" }}>
+        <div style={{ display:"flex",alignItems:"center",gap:9,marginBottom:10 }}>
+          <div style={{ width:30,height:30,borderRadius:"50%",background:"linear-gradient(135deg,#e879f9,#7c3aed)",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:".75rem",color:"#fff" }}>{user?.name?.[0]??"U"}</div>
+          <div><div style={{ fontSize:".8rem",fontWeight:700 }}>{user?.name??"User"}</div><div style={{ fontSize:".66rem",color:"var(--muted)" }}>PCB Designer</div></div>
+        </div>
+        <button onClick={()=>signOut({ callbackUrl:"/login" })} style={{ width:"100%",padding:"6px 0",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",fontSize:".75rem",cursor:"pointer" }}>Sign Out</button>
+      </div>
+    </div>
+  );
+}
